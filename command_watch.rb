@@ -2,7 +2,7 @@
 
 require 'yaml'
 require 'open3'
-require 'shellwords'
+
 
 DB_PATH = '.db'
 CONFIG_PATH = 'config.yml'
@@ -48,12 +48,12 @@ CONFIG.each do |name, conf|
     puts ' CHANGED'
     command = conf['do'].gsub(/\$[12]/) do |match|
       if match == '$1'
-        Shellwords.escape(result)
+        result.to_s.gsub('"', '\"')
       elsif match == '$2'
-        Shellwords.escape(mem.prev_value)
+        mem.prev_value.to_s.gsub('"', '\"')
       end
     end
-    _, do_status = Open3.capture2(command, stdin_data: result)
+    _, do_status = Open3.capture2(command, :stdin_data => result)
 
     mem.commit! if do_status.success? && !ENV['DEBUG']
   else

@@ -1,4 +1,4 @@
 date:
   enabled: true
   watch: date
-  do: echo date changed FROM $2 TO $1 > diff.txt
+  do: echo "date changed FROM $2 TO $1" > diff.txt

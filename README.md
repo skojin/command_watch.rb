@@ -4,7 +4,7 @@ Check command output and send notification if something changed
 
 Setup cron task: */5 * * * * cd /install/path && ./command_watch.rb
 
-```
+```yaml
 config.yml
 
 name:
@@ -18,13 +18,14 @@ name:
 date:
   enabled: false
   watch: date "+%Y-%m-%d"
-  do: mail -s "new day" mail@example.com
+  do: curl -i -X GET "https://api.telegram.org/BOTID:TOKEN/sendMessage" -F "chat_id=CHAT_ID" -F "text=new day $1"
 diff:
   watch: date
   # $1 if current result of watch command
   # $2 is previous result
-  do: echo $1 $2 > diff.txt
-
-
+  do: echo "$1 $2" > diff.txt
 
 ```
+
+## See Also
+https://github.com/skojin/webwatch
