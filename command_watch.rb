@@ -53,9 +53,15 @@ CONFIG.each do |name, conf|
         mem.prev_value.to_s.gsub('"', '\"')
       end
     end
-    _, do_status = Open3.capture2(command, :stdin_data => result)
+    ok = false
+    if !ENV['DEBUG']
+      _, do_status = Open3.capture2(command, :stdin_data => result)
+      ok = do_status.success?
+    else
+      puts "$ #{command}\n"
+    end
 
-    mem.commit! if do_status.success? && !ENV['DEBUG']
+    mem.commit! if ok && !ENV['DEBUG']
   else
     puts ' SAME'
   end
