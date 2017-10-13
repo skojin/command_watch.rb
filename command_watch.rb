@@ -43,6 +43,7 @@ CONFIG.each do |name, conf|
 
 
   result, status = Open3.capture2e(conf['watch'])
+  result = result.to_s.strip
   mem = CommandMemory.new(name, result)
   if mem.changed?
     puts ' CHANGED'
