@@ -35,16 +35,22 @@ Dir.mkdir(DB_PATH) rescue nil
 CONFIG = YAML.load_file(CONFIG_PATH)
 
 CONFIG.each do |name, conf|
+  next if ENV['ONLY'] && ENV['ONLY'] != name
+
   print name
   if conf.has_key?('enabled') && !conf['enabled']
     puts '  DISABLED'
     next
   end
 
-
   result, status = Open3.capture2e(conf['watch'])
-  result = result.to_s.strip
+  if conf['debug']
+    puts
+    p [:status, status.to_i, :result, result]
+  end
+  result = result.to_s.strip rescue result
   mem = CommandMemory.new(name, result)
+
   if mem.changed?
     puts ' CHANGED'
     command = conf['do'].gsub(/\$[12]/) do |match|
