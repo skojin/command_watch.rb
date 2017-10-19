@@ -48,6 +48,11 @@ CONFIG.each do |name, conf|
     puts
     p [:status, status.to_i, :result, result]
   end
+  if status.to_i != 0 && conf['skip_error']
+    puts "  BAD EXIT CODE #{status.to_i}, skip"
+    next
+  end
+
   result = result.to_s.strip rescue result
   mem = CommandMemory.new(name, result)
 
