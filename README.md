@@ -9,7 +9,7 @@ config.yml
 
 name:
   enabled: true  # true|false, default true
-  skip_error: false  # true|false, default false, skip :do command if :watch command return non zero code
+  skip_error: false  # true|false, default false, skip :do command if :watch command return non zero code, useful if curl sometimes return bad code
   # we check output of this :watch command
   watch: curl -s http://example.com | pup -p title text{}
   # if output is different from previous call, then :do command will be called
