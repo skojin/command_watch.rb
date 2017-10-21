@@ -10,13 +10,18 @@ class CommandMemory
   end
 
   def prev_value
-    return @value if defined? @value
-    @value = File.read(@path) rescue nil
+    return @prev_value if defined? @prev_value
+    @prev_value = File.read(@path) rescue nil
   end
 
   # if value changed from previous call
   def changed?
     prev_value != @new_value
+  end
+
+  def condition_chaned? # &:block val
+    return true unless prev_value
+    yield(@new_value.to_i) != yield(prev_value.to_i)
   end
 
   # save new value to db
@@ -33,6 +38,8 @@ class Command
     @name = name
     @conf = conf
   end
+
+
 
   def call
     return if ENV['ONLY'] && ENV['ONLY'] != name
@@ -54,15 +61,18 @@ class Command
     end
 
     result = result.to_s.strip rescue result
-    mem = CommandMemory.new(name, result)
+    @mem = CommandMemory.new(name, result)
 
-    if mem.changed?
+    if changed?
       puts ' CHANGED'
-      command = conf['do'].gsub(/\$[12]/) do |match|
+
+      command = conf['do'].gsub(/\$(1|2|lt|gt|eq)/) do |match|
         if match == '$1'
           result.to_s.gsub('"', '\"')
         elsif match == '$2'
-          mem.prev_value.to_s.gsub('"', '\"')
+          @mem.prev_value.to_s.gsub('"', '\"')
+        elsif match =~ /\$(lt|gt|eq|ne)/
+          conf[$1]
         end
       end
       ok = false
@@ -73,11 +83,26 @@ class Command
         puts "$ #{command}\n"
       end
 
-      mem.commit! if ok && !ENV['DEBUG']
+      @mem.commit! if ok && !ENV['DEBUG']
     else
+      @mem.commit! if !ENV['DEBUG']
       puts ' SAME'
     end
   end
+
+  def changed?
+    return false unless @mem.changed?
+    if conf['lt']
+      @mem.condition_chaned?{|v| v < conf['lt'].to_i }
+    elsif conf['gt']
+      @mem.condition_chaned?{|v| v > conf['gt'].to_i }
+    elsif conf['eq']
+      @mem.condition_chaned?{|v| v == conf['eq'].to_i }
+    else
+      true
+    end
+  end
+
 end
 
 

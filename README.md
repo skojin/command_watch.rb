@@ -22,9 +22,18 @@ date:
   do: curl -i -X GET "https://api.telegram.org/BOTID:TOKEN/sendMessage" -F "chat_id=CHAT_ID" -F "text=new day $1"
 diff:
   watch: date
-  # $1 if current result of watch command
+  # you can use result of :watch command in :do command
+  # $1 current result of :watch command,
   # $2 is previous result
   do: echo "$1 $2" > diff.txt
+process_count:
+  watch: ps | grep ruby | wc -l
+  lt: 4 # less then, when (:watch < 4) is changed, then :do will be called
+  # :lt value available as $lt in :do command
+  # other options is  :gt and :eq
+  # gt: 4 # great then, when (:watch > 4) is changed
+  # eq: 4 # equal, when (:watch == 4) is changed
+  do: mail -s "Process count has changed, was $1, need $lt" mail@example.com
 
 ```
 

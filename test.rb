@@ -42,7 +42,7 @@ end
 
 # test command $1 and $2
 test_command('watch' => 'echo 111',
-  'do' => 'echo $1-$2 > unit.do') do |name, conf|
+  'do' => 'echo "$1-$2" > unit.do') do |name, conf|
   Command.new(name, conf).call
   conf['watch'] = 'echo 222'
   Command.new(name, conf).call
@@ -70,4 +70,48 @@ test_command('watch' => 'echo 111 | grep 222', # grep if not found exit with 256
     conf['skip_error'] = false
     Command.new(name, conf).call
     assert_equal "\n", command_result
+end
+
+# less then
+test_command('watch' => 'echo 10',
+  'lt' => '5',
+  'do' => 'echo "$1 - $lt" > unit.do') do |name, conf|
+    Command.new(name, conf).call
+    assert_equal "10 - 5\n", command_result
+    conf['watch'] = 'echo 5'
+    Command.new(name, conf).call
+    assert_nil command_result
+
+    conf['watch'] = 'echo 4'
+    Command.new(name, conf).call
+    assert_equal "4 - 5\n", command_result
+end
+
+# great then
+test_command('watch' => 'echo 1',
+  'gt' => '5',
+  'do' => 'echo "$1 - $gt" > unit.do') do |name, conf|
+    Command.new(name, conf).call
+    assert_equal "1 - 5\n", command_result
+    conf['watch'] = 'echo 5'
+    Command.new(name, conf).call
+    assert_nil command_result
+
+    conf['watch'] = 'echo 6'
+    Command.new(name, conf).call
+    assert_equal "6 - 5\n", command_result
+end
+
+# equal - :do when equal or not equal
+test_command('watch' => 'echo 5',
+  'eq' => '5',
+  'do' => 'echo "$1 - $eq" > unit.do') do |name, conf|
+    Command.new(name, conf).call
+    assert_equal "5 - 5\n", command_result
+    Command.new(name, conf).call
+    assert_nil command_result
+
+    conf['watch'] = 'echo 6'
+    Command.new(name, conf).call
+    assert_equal "6 - 5\n", command_result
 end
