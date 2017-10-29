@@ -11,6 +11,7 @@ name:
   enabled: true  # true|false, default true
   skip_error: false  # true|false, default false, skip :do command if :watch command return non zero code, useful if curl sometimes return bad code
   # we check output of this :watch command
+  every: 3h # \d+[mhd] - (minute,hour,day) every 3 hours, for example you can run unit every 5 minutes, but call watch command only every 3 hours
   watch: curl -s http://example.com | pup -p title text{}
   # if output is different from previous call, then :do command will be called
   # :do gets output of :watch as STDIN

@@ -30,7 +30,6 @@ class CommandMemory
   end
 end
 
-
 class Command
   attr_reader :name, :conf
 
@@ -39,14 +38,17 @@ class Command
     @conf = conf
   end
 
-
-
   def call
     return if ENV['ONLY'] && ENV['ONLY'] != name
     print name
 
+    if !in_time?
+      puts ' WAIT'
+      return
+    end
+
     if conf.has_key?('enabled') && !conf['enabled']
-      puts '  DISABLED'
+      puts ' DISABLED'
       return
     end
 
@@ -56,7 +58,7 @@ class Command
       p [:status, status.to_i, :result, result]
     end
     if status.to_i != 0 && conf['skip_error']
-      puts "  BAD EXIT CODE #{status.to_i}, skip"
+      puts " BAD EXIT CODE #{status.to_i}, skip"
       return
     end
 
@@ -89,6 +91,34 @@ class Command
       puts ' SAME'
     end
   end
+
+  # check time from last call, if :every option set
+  # @return true if command should be executed
+  def in_time?
+    return true unless conf['every']
+    last_updated = File.mtime("#{DB_PATH}/#{name}") rescue nil
+    return true unless last_updated # db.file not exist
+    last_updated + every <= Time.now
+  end
+
+  # @param str time like 1m (minute), 2h (hours), 3d (days)
+  # @return time interval in seconds
+  def every
+    @every ||= begin
+      conf['every'] =~ /(\d+)([hmd])/
+      case $2
+        when 'm'
+          $1.to_i * 60
+        when 'h'
+          $1.to_i * 60 * 60
+        when 'd'
+          $1.to_i * 60 * 60 * 24
+        else
+          raise "can't parse every: '#{conf['every']}' in #{name}"
+      end
+    end
+  end
+
 
   def changed?
     return false unless @mem.changed?
