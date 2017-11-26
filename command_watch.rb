@@ -4,6 +4,7 @@ require 'yaml'
 require 'open3'
 
 class CommandMemory
+  attr_reader :new_value
   def initialize(name, new_value)
     @path = "#{DB_PATH}/#{name}"
     @new_value = new_value
@@ -64,6 +65,13 @@ class Command
 
     result = result.to_s.strip rescue result
     @mem = CommandMemory.new(name, result)
+
+    if conf['debug'] && @mem.changed?
+      Dir.mkdir('log') rescue nil
+      at = Time.now.to_i
+      File.open("log/#{name}_#{at}_old", 'wb'){|f| f.write @mem.prev_value }
+      File.open("log/#{name}_#{at}_new", 'wb'){|f| f.write @mem.new_value }
+    end
 
     if changed?
       puts ' CHANGED'
