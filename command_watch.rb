@@ -63,7 +63,13 @@ class Command
       return
     end
 
+    result ||= ''
     result = result.to_s.strip rescue result
+    if conf['skip_empty'] && result.empty?
+      puts " EMPTY, skip"
+      return
+    end
+
     @mem = CommandMemory.new(name, result)
 
     if conf['debug'] && @mem.changed?

@@ -73,6 +73,18 @@ test_command('watch' => 'echo 111 | grep 222', # grep if not found exit with 256
     assert_equal "\n", command_result
 end
 
+# test :skip_empty
+test_command('watch' => 'echo', # grep if not found exit with 256 code
+  'skip_empty' => true, #
+  'do' => 'echo $1 > unit.do') do |name, conf|
+    Command.new(name, conf).call
+    assert_nil command_result
+
+    conf['skip_empty'] = false
+    Command.new(name, conf).call
+    assert_equal "\n", command_result
+end
+
 # less then
 test_command('watch' => 'echo 10',
   'lt' => '5',
