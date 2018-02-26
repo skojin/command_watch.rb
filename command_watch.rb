@@ -69,6 +69,10 @@ class Command
       puts " EMPTY, skip"
       return
     end
+    if conf['skip_empty'] && result == 'EOF'
+      puts " EOF, skip"
+      return
+    end
 
     @mem = CommandMemory.new(name, result)
 
