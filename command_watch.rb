@@ -1,5 +1,6 @@
 #!/usr/bin/ruby
-
+# ENV: ONLY=name
+# ENV: DEBUG=1
 require 'yaml'
 require 'open3'
 
